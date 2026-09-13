@@ -410,7 +410,7 @@
     el['btn-enter'].addEventListener('click', () => {
       gesture();
       if (G.mode !== 'entry') return;
-      if (input.mobile) enterFullscreen(); // the tap is a user gesture, so browsers allow it here
+      if (input.mobile) { G.armFullscreen(); enterFullscreen(); } // the tap is a user gesture, so browsers allow it here
       ui.showOverlay(null); el.hud.hidden = false;
       if (G.touchUI) el.touch.hidden = false;
       G.mode = 'playing'; ui.announce(G.room);
@@ -450,9 +450,22 @@
     }
     function exitFullscreen() { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); }
     if (!canFullscreen || standalone) el['btn-full'].hidden = true;
-    if (input.mobile && !canFullscreen && !standalone) el['ov-tip'].hidden = false;
-    el['btn-full'].addEventListener('click', () => { if (inFullscreen()) exitFullscreen(); else enterFullscreen(); });
-    document.addEventListener('webkitfullscreenchange', ui.updateStageScale);
+    // iPhone Safari only gained element fullscreen in 17.4, and even there a home-screen app is
+    // the cleaner route (no close button, no Safari chrome): show the tip on every iPhone.
+    const iphone = /iPhone|iPod/.test(navigator.userAgent);
+    if (input.mobile && !standalone && (iphone || !canFullscreen)) el['ov-tip'].hidden = false;
+    // Keep trying on later taps while playing: the entry tap can be refused (a browser may not
+    // count it, or fullscreen may need a second gesture). Stop once the player backs out of
+    // fullscreen on purpose, until they ask again with the button.
+    let wantFullscreen = false;
+    el['btn-full'].addEventListener('click', () => { if (inFullscreen()) { wantFullscreen = false; exitFullscreen(); } else { wantFullscreen = true; enterFullscreen(); } });
+    const onFsChange = () => { ui.updateStageScale(); if (!inFullscreen() && G.mode !== 'entry') wantFullscreen = false; };
+    document.addEventListener('fullscreenchange', onFsChange);
+    document.addEventListener('webkitfullscreenchange', onFsChange);
+    const retryFullscreen = () => { if (wantFullscreen && input.mobile && G.mode === 'playing' && !inFullscreen()) enterFullscreen(); };
+    el.stage.addEventListener('touchend', retryFullscreen, { passive: true });
+    el.stage.addEventListener('pointerup', retryFullscreen);
+    G.armFullscreen = () => { wantFullscreen = true; };
     el['btn-mute'].addEventListener('click', () => { G.fx.settings.muted = !G.fx.settings.muted; applySettings(); saveSettings(); });
     el.vol.addEventListener('input', () => { G.fx.settings.volume = el.vol.value / 100; G.fx.settings.muted = false; applySettings(); saveSettings(); });
     el['set-vol'].addEventListener('input', () => { G.fx.settings.volume = el['set-vol'].value / 100; applySettings(); saveSettings(); });

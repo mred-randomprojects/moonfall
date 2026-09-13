@@ -160,15 +160,20 @@ def cell_components(arr, rows, cols, keep_secondary_min=2000):
         frames[(r,c)] = sub
     return frames
 
-def foot_anchor(frame, airborne=False):
-    """(x, y) anchor in frame coords: bottom of the figure, x = centre of the lowest 18% of mass."""
+def foot_anchor(frame, airborne=False, body=False):
+    """(x, y) anchor in frame coords: bottom of the figure, x = centre of the lowest 18% of mass.
+
+    body=True anchors x on the upper body (head to hips) instead: in a run cycle the feet swing
+    forty-odd px either way, so pinning them made the body lurch sideways every few frames."""
     alpha = frame[:,:,3]
     m = alpha > 60
     ys, xs = np.where(m)
     bottom = ys.max() + 1
     top = ys.min()
     h = bottom - top
-    if airborne:
+    if body:
+        cx = xs[ys < top + h * 0.6].mean()
+    elif airborne:
         # airborne poses tuck the feet; use the torso column (mass centre) and bbox bottom
         cx = xs.mean()
     else:
@@ -177,9 +182,9 @@ def foot_anchor(frame, airborne=False):
     return float(cx), float(bottom)
 
 ANIMS = [
-    # name, source, row, cols, airborne, fps, per-frame anchor overrides {col: (dx,dy)}
+    # name, source, row, cols, airborne, fps[, anchor mode]
     ('idle',    'v1', [0], 6, False, 8),
-    ('run',     'v2', [0,1], 6, False, 24),
+    ('run',     'v2', [0,1], 6, False, 24, 'body'),
     ('sword',   'v2', [2,3], 6, False, 25),
     ('bow',     'v2', [4], 6, False, 12),
     ('grenade', 'v2', [5], 6, False, 12.5),
@@ -194,7 +199,8 @@ def main():
     f1 = cell_components(v1, 5, 6)
     f2 = cell_components(v2, 6, 6)
     meta = {}
-    for name, src, rows, cols, airborne, fps in ANIMS:
+    for name, src, rows, cols, airborne, fps, *mode in ANIMS:
+        body = mode == ['body']
         frames = f1 if src == 'v1' else f2
         strip = np.zeros((FH, FW * cols * len(rows), 4), np.float32)
         info = []
@@ -202,7 +208,7 @@ def main():
         for r in rows:
             for c in range(cols):
                 fr = frames[(r,c)]
-                ax, ay = foot_anchor(fr, airborne=airborne and True)
+                ax, ay = foot_anchor(fr, airborne=airborne and True, body=body)
                 h, w = fr.shape[:2]
                 ox = int(round(AX - ax)) + i * FW
                 oy = int(round(AY - ay))

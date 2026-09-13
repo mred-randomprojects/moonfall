@@ -298,13 +298,15 @@
     const im = MF.sprites.images.mid;
     const s = 0.62, w = im.width * s, h = im.height * s;
     const y = (GROUND_Y - cam.y * 0.55) - h + 46;
-    const off = ((-cam.x * 0.35) % w + w) % w;
+    // Tiles alternate mirrored / plain, keyed on the tile's own index in the scrolled layer
+    // (not on a loop counter, which flipped the tile in view whenever the offset wrapped at
+    // the room's left edge, so a screen shake there made the whole backdrop flicker).
+    const u = cam.x * 0.35;
+    const n0 = Math.floor(u / w), n1 = Math.floor((u + VIEW_W) / w);
     ctx.save(); ctx.globalAlpha = 0.92;
-    for (let i = -1; i < 3; i++) {
-      const x = off + i * w;
-      if (x > VIEW_W || x + w < 0) continue;
-      const idx = Math.floor((x - off) / w + 1000);
-      if (idx % 2) { ctx.save(); ctx.translate(x + w, y); ctx.scale(-1, 1); ctx.drawImage(im, 0, 0, w, h); ctx.restore(); }
+    for (let n = n0; n <= n1; n++) {
+      const x = n * w - u;
+      if (((n % 2) + 2) % 2) { ctx.save(); ctx.translate(x + w, y); ctx.scale(-1, 1); ctx.drawImage(im, 0, 0, w, h); ctx.restore(); }
       else ctx.drawImage(im, x, y, w, h);
     }
     ctx.restore();
@@ -654,8 +656,9 @@
     ctx.setTransform(R.dpr, 0, 0, R.dpr, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
 
-    const shakeX = G.fx.shakeX, shakeY = G.fx.shakeY;
-    const camx = cam.x + shakeX, camy = cam.y + shakeY;
+    // Shake stays inside the room: pushed past an edge it would reveal the parallax sky beside the stone layer.
+    const camx = clamp(cam.x + G.fx.shakeX, 0, Math.max(0, room.width - VIEW_W));
+    const camy = clamp(cam.y + G.fx.shakeY, 0, Math.max(0, room.height - VIEW_H));
     const cs = { x: camx, y: camy };
 
     // 1. sky + moon (very slow parallax)
