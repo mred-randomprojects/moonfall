@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Moonfall — The Four Embers</title>
+<meta name="description" content="A moonlit 2D platformer: four regions, three weapons, four embers to bring home. Plays in the browser, keyboard, gamepad or touch.">
+<meta name="theme-color" content="#070a14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Moonfall">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // Class the document before first paint so phones never flash the desktop layout.
+  // Same query as MOBILE_QUERY in js/input.js.
+  if (matchMedia('(pointer: coarse) and (hover: none)').matches) document.documentElement.classList.add('is-mobile', 'is-touch');
+</script>
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">
+      <div class="title">MOONFALL</div>
+      <div class="subtitle">THE FOUR EMBERS</div>
+    </div>
+    <div class="tagline">
+      <div class="headline">Bring a little fire to the dark.</div>
+      <div class="support">Four regions. Three weapons. One moon to guide you home.</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="stage-wrap" id="stage-wrap">
+    <div class="stage" id="stage">
+      <canvas id="game" width="1280" height="650"></canvas>
+
+      <!-- HUD -->
+      <div class="hud" id="hud" hidden>
+        <div class="hud-tl">
+          <div class="hud-name">THE WANDERER</div>
+          <div class="hud-hearts" id="hud-hearts" aria-label="Health"></div>
+          <div class="hud-room" id="hud-room">The Outer Ruins</div>
+          <div class="hud-objective" id="hud-objective">Recover the four embers</div>
+          <div class="hud-state" id="hud-state">Idle</div>
+        </div>
+        <div class="hud-bl">
+          <div class="hud-embers" id="hud-embers">0 / 4 EMBERS</div>
+          <div class="hud-controls">
+            <span><b>J</b>/<b>X</b> Sword</span>
+            <span><b>K</b> hold Bow</span>
+            <span><b>G</b>/<b>L</b> Grenade</span>
+            <span><b>Shift</b> Dash</span>
+          </div>
+          <div class="hud-bar" id="hud-bow" hidden><span class="hud-bar-label">BOW</span><span class="hud-bar-track"><span class="hud-bar-fill" id="hud-bow-fill"></span></span><span class="hud-bar-val" id="hud-bow-val">0%</span></div>
+          <div class="hud-bar" id="hud-grenade" hidden><span class="hud-bar-label">GRENADE</span><span class="hud-bar-track"><span class="hud-bar-fill cool" id="hud-grenade-fill"></span></span><span class="hud-bar-val" id="hud-grenade-val"></span></div>
+        </div>
+        <div class="hud-br">
+          <canvas class="minimap" id="minimap" width="168" height="112" title="Open map (M)"></canvas>
+          <div class="hud-buttons">
+            <button class="hbtn" id="btn-mute" title="Mute / unmute">♪</button>
+            <input class="hvol" id="vol" type="range" min="0" max="100" value="70" title="Volume">
+            <button class="hbtn" id="btn-pause" title="Pause (Esc)">❚❚</button>
+            <button class="hbtn" id="btn-full" title="Fullscreen">⛶</button>
+          </div>
+        </div>
+        <div class="announce" id="announce" hidden><div class="announce-title" id="announce-title"></div><div class="announce-sub" id="announce-sub"></div></div>
+        <div class="message" id="message" hidden></div>
+        <div class="prompt" id="prompt" hidden></div>
+      </div>
+
+      <!-- Touch controls: laid out in real screen pixels, not the scaled 1280x650 box -->
+      <div class="touch" id="touch" hidden>
+        <div class="tpad" aria-label="Move">
+          <div class="tpad-half" data-dir="left">◀</div>
+          <div class="tpad-half" data-dir="right">▶</div>
+        </div>
+        <div class="tcluster">
+          <button class="tbtn" data-act="grenade">GRN</button>
+          <button class="tbtn" data-act="dash">DASH</button>
+          <button class="tbtn" data-act="bow">BOW</button>
+          <button class="tbtn use" data-act="interact">USE</button>
+          <button class="tbtn" data-act="sword">SWD</button>
+          <button class="tbtn big" data-act="jump">JUMP</button>
+        </div>
+      </div>
+
+      <div class="rotate-hint" id="rotate-hint">
+        <div class="rotate-icon">⟳</div>
+        <div class="rotate-title">Rotate your phone</div>
+        <div class="rotate-sub">Moonfall plays in landscape.</div>
+      </div>
+
+      <!-- Overlays -->
+      <div class="overlay" id="ov-entry">
+        <div class="panel">
+          <div class="ov-eyebrow">A ruined citadel · an enormous moon</div>
+          <h1 class="ov-title">MOONFALL</h1>
+          <div class="ov-sub">THE FOUR EMBERS</div>
+          <p class="ov-copy">Four embers lie scattered across the citadel's regions. Recover them all and bring them to the beacon in the Moonspire.</p>
+          <div class="ov-status" id="ov-status">Loading assets…</div>
+          <button class="cta" id="btn-enter" disabled>Enter the citadel →</button>
+          <div class="ov-keys">
+            <span><b>A D</b> move</span><span><b>Space</b> jump · double-jump</span><span><b>Shift</b> dash</span>
+            <span><b>J</b> sword</span><span><b>K</b> hold bow</span><span><b>G</b> grenade</span><span><b>E</b> doors</span><span><b>M</b> map</span>
+          </div>
+          <div class="ov-keys ov-touch">
+            <span><b>◀ ▶</b> slide to move</span><span><b>JUMP</b> tap to hop, hold to soar, tap again mid-air</span>
+            <span><b>BOW</b> hold, drag up/down to aim, release</span><span><b>USE</b> doors · beacon</span><span>tap the minimap for the map</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay" id="ov-pause" hidden>
+        <div class="panel">
+          <h2 class="ov-h2">Paused</h2>
+          <div class="settings">
+            <label><span>Volume</span><input type="range" id="set-vol" min="0" max="100" value="70"></label>
+            <label><span>Sound</span><input type="checkbox" id="set-sound" checked></label>
+            <label><span>Impact motion (shake)</span><input type="checkbox" id="set-shake"></label>
+            <label><span>Rumble</span><input type="checkbox" id="set-rumble" checked></label>
+          </div>
+          <div class="row">
+            <button class="cta" id="btn-resume">Resume</button>
+            <button class="ghost" id="btn-restart">Restart adventure</button>
+          </div>
+          <div class="ov-note" id="pause-note"></div>
+        </div>
+      </div>
+
+      <div class="overlay" id="ov-map" hidden>
+        <div class="panel wide">
+          <div class="map-head"><h2 class="ov-h2">The Citadel</h2><div class="map-stats" id="map-stats"></div><button class="ghost" id="btn-map-close">Close (M)</button></div>
+          <canvas id="bigmap" width="900" height="440"></canvas>
+        </div>
+      </div>
+
+      <div class="overlay" id="ov-victory" hidden>
+        <div class="panel">
+          <div class="ov-eyebrow">Victory</div>
+          <h1 class="ov-title small">A fire that outlasts the dark.</h1>
+          <p class="ov-copy">Four embers. Four regions. The citadel is alight again.</p>
+          <button class="cta" id="btn-again">Explore again →</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="ov-error" hidden>
+        <div class="panel">
+          <h2 class="ov-h2">Something went dark</h2>
+          <p class="ov-copy" id="error-copy"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="study" id="study">
+    <div class="study-head">
+      <h2>The motion study</h2>
+      <p>Inspect the Wanderer's seven animations independently of gameplay. Selecting a card pauses exploration.</p>
+    </div>
+    <div class="cards" id="cards"></div>
+    <div class="inspector" id="inspector" hidden>
+      <div class="insp-left">
+        <canvas id="insp-canvas" width="520" height="470"></canvas>
+      </div>
+      <div class="insp-right">
+        <div class="insp-name" id="insp-name">Idle</div>
+        <div class="insp-frame" id="insp-frame">Frame 1 / 6</div>
+        <div class="insp-row">
+          <button class="ghost" id="insp-play">Pause</button>
+          <input type="range" id="insp-scrub" min="0" max="5" value="0">
+        </div>
+        <div class="insp-row speeds" id="insp-speeds">
+          <button data-speed="0.25">0.25×</button><button data-speed="0.5">0.5×</button><button data-speed="1" class="on">1×</button><button data-speed="1.5">1.5×</button>
+        </div>
+        <div class="insp-row">
+          <a class="ghost" id="insp-download" download>Download sprite sheet</a>
+          <button class="cta" id="insp-back">Back to game</button>
+        </div>
+        <div class="insp-note" id="insp-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls-doc">
+    <h3>Controls</h3>
+    <div class="ctl-grid">
+      <div><b>Move</b><span>A / D · ← →</span></div>
+      <div><b>Jump · double-jump</b><span>Space · ↑ (release early for a short hop)</span></div>
+      <div><b>Dash</b><span>Shift</span></div>
+      <div><b>Sword</b><span>J · X</span></div>
+      <div><b>Bow</b><span>Hold K, release to fire · W / S aim · or hold right mouse to aim</span></div>
+      <div><b>Grenade</b><span>G · L</span></div>
+      <div><b>Enter door · light beacon</b><span>E</span></div>
+      <div><b>Map</b><span>M</span></div>
+      <div><b>Pause</b><span>Esc</span></div>
+      <div><b>Restart adventure</b><span>Hold R</span></div>
+      <div><b>Controller</b><span>Stick/D-pad move · A jump · X sword · hold Y bow · B grenade · LB/RB dash · D-pad ↑ interact · right stick aim · View map · Menu pause</span></div>
+    </div>
+  </section>
+</main>
+
+<script src="js/spritedata.js"></script>
+<script src="js/util.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/world.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "moonfall",
+      "runtimeExecutable": "/opt/homebrew/opt/python@3.10/libexec/bin/python3",
+      "runtimeArgs": ["-u", "-m", "http.server", "8765"],
+      "port": 8765
+    }
+  ]
+}

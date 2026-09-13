@@ -1,0 +1,604 @@
+Below is a self-contained prompt you can give another AI agent. It describes the current game’s product experience, mechanics, presentation, and completion criteria.
+
+Create **Moonfall — The Four Embers**, a playable, single-player, browser-based 2D action-platformer with Metroidvania-inspired exploration.
+
+Build it from first principles using this brief as the product specification. Make reasonable implementation decisions independently. Deliver a complete, playable experience with original artwork, fluid character animation, responsive movement, three distinct weapons, atmospheric scenery, interconnected rooms, and satisfying audiovisual feedback.
+
+**1. Product vision**
+
+The player is a lone swordsman exploring a ruined Gothic citadel beneath an enormous moon. Four embers remain scattered across its connected regions. Recover all four and bring them to a beacon in the Moonspire to rekindle the citadel.
+
+The experience should combine:
+
+- The pleasure of controlling a responsive, expressive character.
+- The atmosphere of exploring an abandoned, moonlit castle.
+- The satisfaction of experimenting with sword attacks, charged arrows, and bouncing grenades.
+- The curiosity of discovering where doors lead and seeing exploration progress on a map.
+- A built-in animation laboratory where the character’s movements can be inspected independently of gameplay.
+
+This is a polished, compact proof of concept. Its central purpose is to demonstrate that a consistent original character can look convincing across multiple animations and remain enjoyable to control in a working game.
+
+Use classic Castlevania and Metroid exploration as genre references, with the luminous environmental depth associated with games such as Ori. Create an original identity, character, artwork, and audio.
+
+**2. Intended player experience**
+
+A new player should quickly understand:
+
+“I am exploring this ruined citadel. I can run, double-jump, dash, and fight with three weapons. I need one ember from each region, then I must light the final beacon.”
+
+The experience should feel mysterious, elegant, and energetic. Exploration is inviting, and mistakes are recoverable. Combat provides targets for experimenting with the weapons without overwhelming the platforming.
+
+All movement abilities and weapons are available from the beginning. Progress comes from exploration and collecting the four embers.
+
+The main loop is:
+
+1. Enter a region.
+2. Traverse platforms and gaps.
+3. Fight or evade crystal enemies.
+4. Reach the region’s elevated ember.
+5. Discover a doorway and travel to another region.
+6. Consult the map to find remaining unexplored areas or missing embers.
+7. Return to the final beacon once all four embers are collected.
+
+Do not impose a countdown or scoring requirement.
+
+**3. Main character: The Wanderer**
+
+The playable character is called **The Wanderer**.
+
+Create a recognizable, side-view fantasy swordsman with:
+
+- Short, tousled silver-white hair.
+- Dark navy and charcoal armor or fitted adventuring clothes.
+- Metallic silver details and restrained gold accents.
+- A long crimson scarf or cape that produces a strong moving silhouette.
+- Sturdy boots and readable hands.
+- A silver sword.
+- A bow that appears during archery actions.
+- Small throwable grenades.
+
+The red scarf and pale hair should make the character identifiable against the cool, dark environment.
+
+Maintain the same anatomy, costume, proportions, palette, and equipment design across every animation. Movement should show deliberate changes in pose, weight, and momentum. The scarf should react naturally to movement and attacks.
+
+The character faces left or right according to movement or aiming. Weapon direction and visible facing must agree.
+
+**4. Visual direction**
+
+Use detailed pixel-art-style raster artwork with crisp silhouettes and controlled texture.
+
+The dominant environmental palette is:
+
+- Midnight blue.
+- Desaturated teal.
+- Slate and charcoal.
+- Silver moonlight.
+- Small amber and gold highlights.
+
+Use crimson primarily to distinguish the hero. Embers and explosions supply warmer colors.
+
+The citadel should contain distant spires, broken towers, stone arches, ruined walls, columns, masonry, hanging vegetation, and traces of warm light inside distant windows.
+
+Create clear visual separation between scenery and playable surfaces. Players should recognize platform tops, gaps, enemies, collectibles, and doorways immediately.
+
+The interface should feel like part of an atmospheric game presentation: dark surfaces, fine borders, warm cream typography, restrained gold highlights, and generous space around the game.
+
+Suggested presentation copy:
+
+- Product title: “MOONFALL”
+- Subtitle: “THE FOUR EMBERS”
+- Main headline: “Bring a little fire to the dark.”
+- Supporting line: “Four regions. Three weapons. One moon to guide you home.”
+
+**5. Environmental depth and moon lighting**
+
+The background is a major part of the experience.
+
+Build at least three visually distinct scenery depths:
+
+- A distant castle and sky layer that moves very slowly.
+- A middle layer of ruins that moves more noticeably.
+- A foreground layer of nearby architecture or vegetation that moves fastest.
+
+These layers should move at different rates as the camera follows the player, creating visible parallax depth.
+
+Add subtle atmospheric movement through drifting mist, floating motes, and gently changing light.
+
+The moon should be large and prominent in outdoor views. Give it a soft halo, luminous bloom, and broad translucent rays that pass through the scene. Its illumination should contribute to the mood without obscuring platforms or the hero.
+
+Keep the foreground sufficiently transparent or sparse around the action. Preserve the moon’s visibility when placing the HUD and minimap.
+
+Different rooms may share an architectural vocabulary and scenery assets, but each needs a distinct lighting treatment and traversal layout.
+
+**6. World structure and exploration**
+
+Create four separately loaded or separately activated rooms connected by doors.
+
+Use this connectivity:
+
+| Region | Connected regions |
+|---|---|
+| The Outer Ruins | The Drowned Aqueduct, The Ember Crypt |
+| The Drowned Aqueduct | The Outer Ruins, The Moonspire |
+| The Ember Crypt | The Outer Ruins, The Moonspire |
+| The Moonspire | The Drowned Aqueduct, The Ember Crypt |
+
+Represent the rooms in a two-by-two map:
+
+| | |
+|---|---|
+| Outer Ruins | Drowned Aqueduct |
+| Ember Crypt | Moonspire |
+
+The player begins in the Outer Ruins.
+
+Each room contains:
+
+- Ground sections separated by gaps.
+- Elevated stone platforms.
+- A traversable route to one ember.
+- Several crystal enemies.
+- Two connecting doors.
+
+The Moonspire also contains the final beacon.
+
+Each region should extend across several screen widths. Use approximately these reference dimensions:
+
+| Region | Reference width | Enemies | Embers |
+|---|---:|---:|---:|
+| Outer Ruins | 2,840 world units | 3 | 1 |
+| Drowned Aqueduct | 3,400 world units | 4 | 1 |
+| Ember Crypt | 2,800 world units | 4 | 1 |
+| Moonspire | 3,200 world units | 5 | 1 |
+
+Total traversable room width is approximately 12,240 units. A typical desktop gameplay view is approximately 1,280 units wide and 650 units high.
+
+These dimensions establish scale. Preserve the traversal experience if using another coordinate system.
+
+**7. Individual room identities**
+
+**The Outer Ruins**
+
+Subtitle: “Where the last light lingers.”
+
+This is the introductory courtyard, with strong moonlight and blue-green stone.
+
+Start the player safely near the left edge. Introduce movement, the first enemy, gaps, and an ascending platform sequence. Place the ember above the earlier portion of the room so the player encounters the collection objective relatively quickly.
+
+Place the door to the Ember Crypt around the middle-to-later portion of the room. Place the Drowned Aqueduct entrance near the far right.
+
+**The Drowned Aqueduct**
+
+Subtitle: “Follow the silver water.”
+
+Use cooler cyan and teal lighting. Suggest water, damp stone, and old aqueduct architecture through the atmosphere.
+
+Create a longer horizontal platforming route with alternating elevated steps and gaps. Position the ember high near the far end.
+
+The Outer Ruins connection is near the left entrance. The Moonspire connection is near the far right.
+
+Water is an environmental theme; swimming is outside the required gameplay.
+
+**The Ember Crypt**
+
+Subtitle: “A fire beneath the stone.”
+
+Use dimmer moonlight with subdued orange, brown, and ember-colored accents. Retain enough contrast to read the hero and platform edges.
+
+Build a rising route through ruined stone platforms. Place the ember high near the far end.
+
+The Outer Ruins entrance is near the left. The Moonspire connection is near the right.
+
+**The Moonspire**
+
+Subtitle: “Bring the four embers home.”
+
+This is the final region. Use stronger moonlight, silver highlights, and subtle violet-blue tones.
+
+Include the highest-feeling platform route and the greatest number of enemies. Place its ember on an elevated platform in the later part of the room.
+
+The Aqueduct entrance is near the left. The Crypt connection is farther into the room. Place the final beacon near the far right on safe ground.
+
+The beacon is the destination for the complete adventure.
+
+**8. Doors and room transitions**
+
+Doors should appear as readable, softly glowing architectural openings.
+
+When the grounded player is close enough to a door, display a contextual prompt such as:
+
+“E — Enter The Drowned Aqueduct”
+
+Entering a door requires deliberate interaction. Walking past it should not automatically move the player.
+
+Use a short fade-through-dark transition, approximately 0.7 seconds overall. Change rooms near the midpoint and reveal the destination afterward.
+
+On arrival:
+
+- Place the player on safe ground near the corresponding entrance.
+- Stop residual movement.
+- Reset transient attack and aiming states.
+- Give a brief protection window.
+- Prevent immediate accidental re-entry.
+- Show the new region’s title and subtitle.
+
+Collected embers, visited-room status, and defeated enemies remain preserved when moving between rooms. Transient projectiles should not carry across transitions or reappear unexpectedly on revisits.
+
+**9. Movement and platforming**
+
+Movement should feel responsive and forgiving.
+
+Required actions:
+
+- Run left and right.
+- Jump.
+- Double-jump.
+- Control jump height through button release.
+- Adjust horizontal movement in the air.
+- Dash in the facing direction.
+
+Running should accelerate quickly and stop predictably, with slightly stronger control on the ground than in the air.
+
+A full jump should have a readable ascent, apex, descent, and landing. Releasing the jump button early should produce a shorter jump.
+
+Allow one additional jump while airborne. Walking off an edge must not grant two extra airborne jumps.
+
+Include a small grace period after leaving an edge and a short input buffer before landing. These should make intended jumps register naturally.
+
+Dashing should be a brief, fast burst with a cooldown, a visible trail, and a distinct sound. During the burst, horizontal movement is fast and vertical movement is briefly arrested. It also protects against enemy contact damage during that burst.
+
+Platforms are solid on their tops, sides, and undersides. The player must not pass through ceilings or walls.
+
+All ember routes must be reachable using the available movement abilities. Gaps should be challenging enough to demonstrate jumping while remaining fair.
+
+Use a horizontally following camera that eases toward the player and respects room boundaries.
+
+**10. Combat: three immediately available weapons**
+
+The player always has access to the sword, bow, and grenades. Use direct action controls without requiring an inventory screen or weapon-selection menu.
+
+There are no ammunition pickups or consumable ammunition limits. Timing, position, charge, and cooldowns differentiate the weapons.
+
+**Sword**
+
+The sword is the fast, close-range option.
+
+A button press starts a complete attack animation with anticipation, a visible strike, and recovery. Apply damage during the visible strike portion.
+
+The hit area extends in front of the hero. Each enemy can be damaged once per swing. Holding or repeatedly pressing attack must not bypass the attack timing.
+
+Add a luminous slash trail, impact sparks, a sharp sound, and a brief impact pause when a strike connects.
+
+Movement remains possible during the swing, at a reduced speed.
+
+Reference balance: a sword strike deals 2 damage against a standard enemy with 3 health.
+
+**Bow and arrows**
+
+The bow is the deliberate ranged option.
+
+Holding the bow control begins drawing. Releasing it fires one arrow.
+
+Show the draw progressing through character poses and a visible charge percentage. Include a subtle aiming guide.
+
+Allow upward, level, and downward aiming. Support keyboard aim and mouse-based directional aiming.
+
+A longer draw increases arrow speed and damage. A fully charged arrow can defeat a standard enemy in one hit.
+
+Arrows follow a lightly arcing trajectory. They must hit the first wall, platform, or enemy in their path. Fast arrows must not skip thin obstacles.
+
+An arrow that hits stone briefly remains embedded. An arrow hitting an enemy produces a distinct impact response.
+
+Drawing the bow slows movement. Cancelling input through pause, focus loss, or a room transition should safely cancel the draw.
+
+Reference damage: 1, 2, or 3 depending on charge.
+
+**Grenades**
+
+Grenades are the explosive area-damage option.
+
+A button press starts a throwing animation. Release the physical grenade at the moment the hand visibly throws it.
+
+The grenade travels forward and upward, inherits some player momentum, falls under gravity, and bounces against scenery.
+
+Use a readable fuse with increasingly urgent light near detonation.
+
+On detonation, produce:
+
+- A bright central flash.
+- An expanding shockwave.
+- Hot sparks and debris-like particles.
+- A layered explosion sound with a strong low-frequency component.
+- A short impact pause.
+- The strongest camera shake and rumble in the game.
+
+The blast damages nearby enemies and can defeat multiple enemies at once. The player does not take damage from their own grenades.
+
+Reference balance: 4 damage within a radius of about 170 world units.
+
+**11. Enemies**
+
+Use a simple, original enemy type: a hovering, luminous crystal sentinel.
+
+Its appearance should combine:
+
+- A diamond-shaped or rotating geometric body.
+- A bright cyan core.
+- A subtle surrounding glow.
+- A small health bar.
+- A clear hit flash.
+- A satisfying burst when destroyed.
+
+Enemies patrol short horizontal paths near their starting positions and gently bob visually.
+
+They damage the player through contact. They do not require ranged attacks, complex pursuit, or boss behavior.
+
+Give each enemy 3 health. This makes the weapon differences immediately understandable:
+
+- Two sword hits defeat one.
+- A fully charged arrow defeats one.
+- A grenade blast defeats one and may also catch nearby enemies.
+
+Defeated enemies stay defeated for the remainder of the current adventure, including after changing rooms or respawning.
+
+**12. Health, falling, and recovery**
+
+The player has five health units, shown clearly in the HUD.
+
+Enemy contact removes one health unit, knocks the character back, and grants a short invulnerability period. Show that temporary protection through a visual response such as blinking.
+
+Falling below the room costs one health unit and returns the player to their last safe ground position in that room.
+
+When health reaches zero:
+
+- Restore health to five.
+- Return the player to their last safe ground.
+- Preserve collected embers, defeated enemies, and exploration progress.
+- Display a short recovery message such as “Rekindled at your last safe ground.”
+
+Keep recovery quick so players can continue experimenting.
+
+An explicit restart resets the entire adventure. Reloading the page starts a new session; persistent saved games are outside this version’s scope.
+
+**13. Collectibles and winning**
+
+There are exactly four embers, one per region.
+
+An ember should be a small, floating, warm golden object, clearly distinguishable from enemies. Give it a gentle bob and glow.
+
+Collect it through proximity. Respond with a warm chime, particles, a brief light effect, and an immediate progress update.
+
+The HUD shows “0 / 4 EMBERS” through “4 / 4 EMBERS.”
+
+After collecting all four, change the objective to:
+
+“Light the beacon in the Moonspire.”
+
+The player must approach the final beacon and interact to win.
+
+If they interact before collecting all four, explain that the remaining embers are required.
+
+On victory, stop active gameplay and show a celebratory overlay:
+
+- Title: “A fire that outlasts the dark.”
+- Supporting copy: “Four embers. Four regions. The citadel is alight again.”
+- Action: “Explore again →”
+
+Replay begins a fresh adventure.
+
+**14. Sound and physical feedback**
+
+Create distinct, satisfying sound effects for:
+
+- Footsteps.
+- Jump and double-jump.
+- Landing.
+- Dash.
+- Sword swing.
+- Weapon impact.
+- Enemy destruction.
+- Bow draw and release.
+- Grenade throw and bounce.
+- Explosion.
+- Taking damage.
+- Ember pickup.
+- Door transition.
+- Victory.
+
+Prioritize strong transient sounds, layered texture, appropriate low-frequency weight, stereo positioning, and subtle reverberation.
+
+Explosions should feel much heavier than footsteps or arrows. Pickups should sound warm and rewarding. Avoid making every event equally loud.
+
+Provide volume and mute controls. Audio starts only after a player gesture.
+
+Add physical vibration or controller rumble where the browser and hardware support it. Scale intensity by event: light movement feedback, medium hits, and strong explosions.
+
+Physical rumble and visual impact motion need independent toggles. Unsupported vibration hardware must not prevent play.
+
+Respect reduced-motion preferences by defaulting strong impact motion off. Gameplay must remain readable with shake and rumble disabled.
+
+**15. Character animation requirements**
+
+Provide seven inspectable animation categories:
+
+| Animation | Frame target | Presentation |
+|---|---:|---|
+| Idle | 6 | Subtle breathing and scarf movement |
+| Run | 12 | Clear stride cycle and weight transfer |
+| Sword | 12 | Anticipation, strike, and recovery |
+| Bow | 6 | Draw, aim, and release |
+| Grenade throw | 6 | Wind-up, release, and follow-through |
+| Jump | 6 | Takeoff and ascent poses |
+| Fall and landing | 6 | Descent and grounded recovery |
+
+The reference experience has 54 active poses. Running plays at approximately 24 frames per second and sword attacks at approximately 25.
+
+Maintain a stable character anchor across frames so the hero does not jitter or float unintentionally. Align feet with the ground and weapon events with the animation.
+
+Gameplay determines the correct jump, fall, landing, bow-charge, and release poses. Avoid blindly looping those states.
+
+Use transparent sprite assets with clean edges. Do not leave visible checkerboards, neighboring frame fragments, or stray background pixels around the character.
+
+**16. Built-in motion laboratory**
+
+Below the playable game, include a section called **“The motion study.”**
+
+Show a preview card for each of the seven animation categories. Each card contains an animated character preview, the motion name, and its frame count.
+
+Selecting a card pauses exploration and displays the selected animation at a larger size.
+
+Provide:
+
+- Play and pause.
+- A frame scrubber.
+- The current frame number and total.
+- Playback speeds of 0.25×, 0.5×, 1×, and 1.5×.
+- Download of the relevant sprite sheet.
+- A clear “Back to game” action.
+
+Players should be able to inspect animations before beginning the adventure.
+
+Returning to gameplay restores the current adventure. The inspector is an important part of the product because it lets users evaluate animation quality and character consistency directly.
+
+**17. HUD, map, and surrounding interface**
+
+During gameplay, display:
+
+- The Wanderer’s name.
+- Five health indicators.
+- Current room name.
+- Current objective.
+- Ember collection count.
+- Current movement or action state.
+- Sword, bow, and grenade control reminders.
+- Bow charge while drawing.
+- Grenade cooldown while unavailable.
+- Sound, pause, and fullscreen controls.
+- A compact minimap.
+
+The minimap shows four connected region boxes. Distinguish the current region, visited regions, and unexplored regions. Show the player’s approximate position within the current room and whether each visited region’s ember has been recovered.
+
+Clicking the minimap or pressing M opens a larger map and pauses gameplay.
+
+The larger map shows:
+
+- The same room connections.
+- Names of visited regions.
+- “Unexplored” for undiscovered regions.
+- A simplified platform layout for visited rooms.
+- Player position.
+- Ember status.
+- Number of regions explored and embers recovered.
+
+Provide a clear close control and restore keyboard focus appropriately.
+
+Add short room-entry announcements and brief contextual messages without covering the action for long periods.
+
+Before play, show an inviting entry overlay with “Enter the citadel →”. Also provide loading and asset-failure feedback so the player never encounters an unexplained blank screen.
+
+**18. Input and device support**
+
+Primary keyboard controls:
+
+| Action | Control |
+|---|---|
+| Move | A/D or left/right arrows |
+| Jump and double-jump | Space or up arrow |
+| Dash | Shift |
+| Sword | J or X |
+| Draw bow | Hold K |
+| Fire arrow | Release K |
+| Aim bow upward/downward | W/S |
+| Throw grenade | G or L |
+| Enter door / activate beacon | E |
+| Open or close map | M |
+| Pause | Escape |
+| Restart adventure | R |
+
+Mouse alternative: hold the right mouse button over the game to draw and aim the bow; release to fire.
+
+Support a standard controller:
+
+- Left stick or D-pad: movement.
+- A: jump.
+- X: sword.
+- Hold Y and release: bow.
+- B: grenade.
+- Shoulder buttons: dash.
+- D-pad up: interact.
+- Right stick vertical axis: bow aim.
+- View: map.
+- Menu: pause.
+
+For touch devices, provide on-screen movement, jump, sword, bow, grenade, and interaction buttons. Bow input must support press, hold, and release.
+
+Scale the game and surrounding interface to the available screen. Support fullscreen play.
+
+Pause safely when the window loses focus or becomes hidden. Clear held controls so returning cannot cause unintended movement or weapon fire.
+
+**19. Reference gameplay tuning**
+
+Use these as starting values when working in the reference coordinate scale. Adjust only where necessary to preserve the intended feel.
+
+| Behavior | Reference value |
+|---|---:|
+| Running speed | 290 units/second |
+| Movement during sword attack | 190 units/second |
+| Movement while drawing bow | 105 units/second |
+| Jump impulse | 570 units/second upward |
+| Gravity | 1,500 units/second² |
+| Maximum falling speed | 850 units/second |
+| Edge-jump grace period | 0.11 seconds |
+| Jump input buffer | 0.12 seconds |
+| Dash speed | 750 units/second |
+| Dash duration | 0.16 seconds |
+| Dash cooldown | 0.65 seconds |
+| Complete sword animation | 0.48 seconds |
+| Full bow charge | 0.9 seconds |
+| Arrow firing cooldown | 0.25 seconds |
+| Arrow launch speed | 590–1,160 units/second |
+| Grenade throw animation | 0.48 seconds |
+| Grenade release after throw begins | 0.24 seconds |
+| Grenade fuse after release | 1.4 seconds |
+| Grenade cooldown | 1.8 seconds |
+| Grenade blast radius | 170 units |
+| Door transition | 0.7 seconds |
+| Damage invulnerability | 1.4 seconds |
+
+Correct relationships matter: a charged arrow feels faster and stronger, a grenade has enough delay to bounce, and damage occurs when the visible weapon action connects.
+
+**20. Scope boundaries**
+
+Keep this release focused on the described adventure and animation showcase.
+
+The required scope does not include multiplayer, accounts, monetization, crafting, shops, inventory management, equipment upgrades, dialogue trees, procedural generation, permanent saves, boss fights, destructible environments, or an ability-unlock system.
+
+The four rooms form a connected exploration space, but every required movement ability is available from the start.
+
+Use a lightweight implementation suitable for browser play. The framework and rendering approach are implementation choices. Deliver all required assets with the game so players do not need an image-generation account or API key.
+
+**21. Definition of done**
+
+Deliver a working game, its original assets, and clear instructions for running it.
+
+The recreation is complete when:
+
+1. A new player can enter, understand the objective, and control the character immediately.
+2. Running, jumping, double-jumping, landing, and dashing feel responsive and behave consistently.
+3. Every ember can be reached through legitimate platforming.
+4. All room connections work in both directions and have safe arrival points.
+5. The minimap and full map accurately reflect exploration and collection.
+6. Sword damage, arrow release, and grenade release match their visible animations.
+7. Arrows respect scenery, and grenades bounce and explode reliably.
+8. Each weapon has a clearly different tactical and sensory identity.
+9. Health loss, falling, recovery, pause, focus loss, and restart behave predictably.
+10. Room revisits preserve the adventure’s progress.
+11. The final beacon requires all four embers and leads to a replayable victory state.
+12. Parallax and moon lighting produce convincing depth without obscuring gameplay.
+13. Sound, impact motion, and supported-device rumble work with independent controls.
+14. All seven animations can be played, slowed, paused, scrubbed, and downloaded through the motion laboratory.
+15. Character identity remains consistent, and sprite transparency and alignment are clean.
+16. The game remains playable when audio, rumble, or strong visual motion is disabled.
+17. Validation covers gameplay rules and an actual end-to-end playthrough, with any device-specific limitations stated accurately.
+
+Prioritize the feel of controlling the Wanderer, readable and consistent animation, satisfying weapon feedback, and a coherent journey through the four regions.
