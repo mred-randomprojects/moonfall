@@ -10,7 +10,7 @@
   function init() {
     const ids = ['stage', 'hud', 'hud-hearts', 'hud-room', 'hud-objective', 'hud-state', 'hud-embers', 'hud-bow', 'hud-bow-fill', 'hud-bow-val', 'hud-grenade', 'hud-grenade-fill', 'hud-grenade-val',
       'minimap', 'btn-mute', 'vol', 'btn-pause', 'btn-full', 'announce', 'announce-title', 'announce-sub', 'message', 'prompt', 'touch',
-      'ov-entry', 'ov-status', 'btn-enter', 'ov-pause', 'set-vol', 'set-sound', 'set-shake', 'set-rumble', 'btn-resume', 'btn-restart', 'pause-note',
+      'ov-entry', 'ov-status', 'btn-enter', 'ov-tip', 'ov-pause', 'set-vol', 'set-sound', 'set-shake', 'set-rumble', 'btn-resume', 'btn-restart', 'pause-note',
       'ov-map', 'map-stats', 'btn-map-close', 'bigmap', 'ov-victory', 'btn-again', 'ov-error', 'error-copy',
       'cards', 'inspector', 'insp-canvas', 'insp-name', 'insp-frame', 'insp-play', 'insp-scrub', 'insp-speeds', 'insp-download', 'insp-back', 'insp-note'];
     for (const id of ids) UI.el[id] = $(id);

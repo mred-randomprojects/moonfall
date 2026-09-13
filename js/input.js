@@ -151,6 +151,25 @@
       pad.addEventListener('lostpointercapture', end);
     }
     I.resetTouch = () => { active = null; steer(null); I.touchAimY = 0; buttons.forEach((b) => b.classList.remove('down')); };
+
+    // iOS Safari zooms on a double tap (which is exactly what a double jump is) no matter what
+    // touch-action says or what pointer events prevent; only cancelling the touch events
+    // themselves stops it. The controls run on pointer events, so nothing here needs clicks.
+    const swallow = (e) => { if (e.cancelable) e.preventDefault(); };
+    for (const t of ['touchstart', 'touchend', 'touchmove']) container.addEventListener(t, swallow, { passive: false });
+  }
+
+  // The rest of the stage keeps its clicks (Enter, Resume, HUD buttons): only the second tap of
+  // a double tap is cancelled, the one that would zoom. Pinches (iOS gesture events) too.
+  function guardZoom(stage) {
+    let lastTap = 0;
+    stage.addEventListener('touchend', (e) => {
+      const now = performance.now();
+      if (now - lastTap < 350 && e.cancelable) e.preventDefault();
+      lastTap = now;
+    }, { passive: false });
+    document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('dblclick', (e) => { if (I.mobile) e.preventDefault(); });
   }
 
   // Standard gamepad mapping
@@ -203,6 +222,7 @@
     window.addEventListener('keydown', (e) => onKey(e, true));
     window.addEventListener('keyup', (e) => onKey(e, false));
     bindMouse(stage);
+    guardZoom(stage);
     I.touchAvailable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0 && matchMedia('(pointer: coarse)').matches);
     I.mobile = matchMedia(MOBILE_QUERY).matches;
     if (touchContainer) bindTouch(touchContainer);

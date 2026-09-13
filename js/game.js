@@ -410,6 +410,7 @@
     el['btn-enter'].addEventListener('click', () => {
       gesture();
       if (G.mode !== 'entry') return;
+      if (input.mobile) enterFullscreen(); // the tap is a user gesture, so browsers allow it here
       ui.showOverlay(null); el.hud.hidden = false;
       if (G.touchUI) el.touch.hidden = false;
       G.mode = 'playing'; ui.announce(G.room);
@@ -429,17 +430,29 @@
     el['btn-again'].addEventListener('click', () => { newAdventure(); G.mode = 'playing'; ui.showOverlay(null); ui.announce(G.room); });
     el['btn-map-close'].addEventListener('click', () => toggleMap());
     el.minimap.addEventListener('click', () => { if (G.mode === 'playing') toggleMap(); });
-    // iOS Safari has no element fullscreen at all; hide the button rather than offer a dead one.
-    if (!document.fullscreenEnabled) el['btn-full'].hidden = true;
-    el['btn-full'].addEventListener('click', () => {
-      const st = el.stage;
-      if (document.fullscreenElement) { document.exitFullscreen(); return; }
-      if (!st.requestFullscreen) return;
-      st.requestFullscreen().then(() => {
-        // Android lets a fullscreen page pin its orientation; elsewhere this just rejects.
-        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
-      }).catch(() => {});
-    });
+    // Fullscreen: Android and desktop browsers have it (Safari with the webkit prefix on older
+    // versions); iPhone Safari has none for elements at all, and an app opened from the home
+    // screen is already fullscreen. Hide the button whenever it would be dead, and on iPhone
+    // point at the home-screen route instead.
+    const st = el.stage;
+    const canFullscreen = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled) && !!(st.requestFullscreen || st.webkitRequestFullscreen);
+    const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches);
+    const inFullscreen = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+    function enterFullscreen() {
+      if (!canFullscreen || inFullscreen()) return;
+      try {
+        const p = st.requestFullscreen ? st.requestFullscreen({ navigationUI: 'hide' }) : st.webkitRequestFullscreen();
+        Promise.resolve(p).then(() => {
+          // Android lets a fullscreen page pin its orientation; elsewhere this just rejects.
+          if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+        }).catch(() => {});
+      } catch (_) { /* unsupported: the page layout already fills the viewport */ }
+    }
+    function exitFullscreen() { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); }
+    if (!canFullscreen || standalone) el['btn-full'].hidden = true;
+    if (input.mobile && !canFullscreen && !standalone) el['ov-tip'].hidden = false;
+    el['btn-full'].addEventListener('click', () => { if (inFullscreen()) exitFullscreen(); else enterFullscreen(); });
+    document.addEventListener('webkitfullscreenchange', ui.updateStageScale);
     el['btn-mute'].addEventListener('click', () => { G.fx.settings.muted = !G.fx.settings.muted; applySettings(); saveSettings(); });
     el.vol.addEventListener('input', () => { G.fx.settings.volume = el.vol.value / 100; G.fx.settings.muted = false; applySettings(); saveSettings(); });
     el['set-vol'].addEventListener('input', () => { G.fx.settings.volume = el['set-vol'].value / 100; applySettings(); saveSettings(); });
