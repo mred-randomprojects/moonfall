@@ -19,7 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      # The reachability bot on the real physics, headless: every platform, ember, door and the beacon,
+      # from the start of every room and from every door into it; plus every image the game loads exists.
+      - name: Every room is still winnable
+        run: node tools/run_reach.js
 
       # No build step: the game is plain HTML/CSS/JS. Ship everything except the dev tooling.
       - name: Collect the static site
@@ -29,11 +39,16 @@ jobs:
             --exclude='tools' --exclude='specs.txt' --exclude='.DS_Store' \
             ./ _site/
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      # One curl tells whether live == main.
+      - name: Stamp the deploy
+        run: echo "{\"commit\":\"${GITHUB_SHA::7}\",\"deployedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > _site/version.json
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      # v4+ of this action leaves dotfiles (.gitignore, .nvmrc) out of the artifact.
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
@@ -46,4 +61,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

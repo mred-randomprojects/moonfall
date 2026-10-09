@@ -1,12 +1,16 @@
-// Headless reachability test, run inside the game page (paste into the console or via the browser tool).
-// For every room: BFS over solids using real physics; every platform, the ember, both doors and the beacon must be reachable.
+// Headless reachability test, run inside the game page (paste into the console or via the browser tool), or from
+// Node with `node tools/run_reach.js` (the deploy runs that before it publishes).
+// For every room, from every way into it (its start and each door that leads there): BFS over solids using real
+// physics; every platform, the ember, both doors and the beacon must be reachable. It ends on a new adventure.
 (function () {
   const G = MF.game, T = MF.entities.T, ROOMS = MF.world.ROOMS;
   const STEP = G.STEP;
   const p = G.player;
   const results = {};
+  // manualDrive stops the page's own loop from stepping the world while the bot drives it. Both it and the mode
+  // go back to what they were at the end, or the page would stay frozen (or "playing" behind the entry screen).
+  const savedState = G.state, savedManualDrive = G.manualDrive, savedMode = G.mode;
   G.manualDrive = true;
-  const savedState = G.state;
 
   function silent() { return { moveX: 0, jumpPressed: false, jumpHeld: false, dashPressed: false, swordPressed: false, bowHeld: false, grenadePressed: false, aimUp: false, aimDown: false, mouseAim: null, padAimY: 0 }; }
 
@@ -55,12 +59,27 @@
     return out;
   }
 
-  for (const id in ROOMS) {
+  // Every way into a room: its start, and each door that leads here. game.js updateTransition drops the player at
+  // this room's door back to where they came from (or at the start, if there is none).
+  function entrances(id) {
+    const room = ROOMS[id], out = [{ from: 'start', x: room.start.x }];
+    for (const from in ROOMS) {
+      if (!ROOMS[from].doors.some((d) => d.to === id)) continue;
+      const back = room.doors.find((d) => d.to === from);
+      out.push({ from, x: back ? back.x + back.w / 2 : room.start.x });
+    }
+    return out;
+  }
+  const groundIdx = (solids, x) => solids.findIndex((s) => s.type === 'ground' && x >= s.x && x <= s.x + s.w);
+
+  // Everything reachable in room `id` for a player who appears at `spawnX` on the ground.
+  function explore(id, spawnX) {
     G.state = { embers: { ruins: false, aqueduct: false, crypt: false, moonspire: false }, visited: new Set(), defeated: { ruins: new Set(), aqueduct: new Set(), crypt: new Set(), moonspire: new Set() }, beaconLit: false, won: false };
-    G.loadRoom(id, ROOMS[id].start.x);
+    G.loadRoom(id, spawnX);
     G.mode = 'playing';
     const room = G.room, solids = room.solids;
-    const startIdx = solids.findIndex((s) => s.type === 'ground' && room.start.x >= s.x && room.start.x <= s.x + s.w);
+    const startIdx = groundIdx(solids, spawnX);
+    if (startIdx < 0) throw new Error(`${id}: no ground under the spawn point x=${spawnX}`);
     const reached = new Set([startIdx]);
     const queue = [startIdx];
     const edges = [];
@@ -110,12 +129,28 @@
         if (emberOk) break;
       }
     }
-    const groundIdx = (x) => solids.findIndex((s) => s.type === 'ground' && x >= s.x && x <= s.x + s.w);
-    const doorsOk = room.doors.map((d) => ({ to: d.to, ok: reached.has(groundIdx(d.x + d.w / 2)) }));
-    const beaconOk = room.beacon ? reached.has(groundIdx(room.beacon.x)) : null;
-    results[id] = { solids: solids.length, reached: reached.size, unreachable, emberOk, doorsOk, beaconOk, edges: edges.length };
+    const doorsOk = room.doors.map((d) => ({ to: d.to, ok: reached.has(groundIdx(solids, d.x + d.w / 2)) }));
+    const beaconOk = room.beacon ? reached.has(groundIdx(solids, room.beacon.x)) : null;
+    return { solids: solids.length, reached: reached.size, unreachable, emberOk, doorsOk, beaconOk, edges: edges.length };
   }
-  G.state = savedState;
-  G.newAdventure();
+
+  try {
+    for (const id in ROOMS) {
+      // The BFS only depends on the solid it starts from: entrances on the same ground share one run.
+      const byStart = new Map();
+      const runs = entrances(id).map(({ from, x }) => {
+        const idx = groundIdx(ROOMS[id].solids, x);
+        if (!byStart.has(idx)) byStart.set(idx, explore(id, x));
+        return Object.assign({ from, x }, byStart.get(idx));
+      });
+      // The start's run, as before, plus one per door that leads here.
+      results[id] = Object.assign({}, runs[0], { fromDoors: runs.slice(1) });
+    }
+  } finally {
+    G.state = savedState;
+    G.newAdventure();
+    G.manualDrive = savedManualDrive;
+    G.mode = savedMode;
+  }
   return results;
 })();

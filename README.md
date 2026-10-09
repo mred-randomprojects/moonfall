@@ -41,11 +41,26 @@ then open http://localhost:8765/.
   (player, sentinels, projectiles), `world.js` (rooms), `render.js`, `ui.js`,
   `audio.js`, `game.js` (state machine and main loop)
 - `assets/` — parallax layers and the sprite sheets cut from the source art
-- `tools/` — sprite / scenery / icon builders (Python + Pillow) and the in-page
-  reachability and playthrough bots
+- `tools/` — sprite / scenery / icon builders (Python + Pillow), the reachability
+  bot (`reach_test.js`: in the page, or headless through `run_reach.js`) and the
+  in-page playthrough bot
 - `specs.txt` — the original design brief
+
+## Checking
+
+```bash
+node tools/run_reach.js
+```
+
+Runs the reachability bot headlessly on the real physics (Node 22, see `.nvmrc`;
+no install): every platform, ember, door and the beacon must be reachable from
+the start of every room and from every door into it, and every image the game
+loads must exist. It takes a few seconds and exits 1 on any failure. Run it after
+changing the tuning in `js/entities.js`, the rooms in `js/world.js` or an asset
+path.
 
 ## Deploying
 
-Push to `main`; `.github/workflows/deploy.yml` publishes the repo (minus tooling)
-to GitHub Pages.
+Push to `main`; `.github/workflows/deploy.yml` runs `node tools/run_reach.js`
+and, only if every room is still winnable, publishes the repo (minus tooling) to
+GitHub Pages.
