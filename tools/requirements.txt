@@ -1,0 +1,8 @@
+# Asset pipeline (tools/build_sprites.py, build_scenery.py, build_icons.py).
+# Python 3.10–3.12: numpy 1.26.4 has no wheels for 3.13 or later.
+# With these versions (on Python 3.10.16) the builders reproduce every committed
+# sprite strip, foreground piece, icon and js/spritedata.js byte for byte.
+#   python3 -m pip install -r tools/requirements.txt
+Pillow==10.3.0
+numpy==1.26.4
+scipy==1.13.0

@@ -41,9 +41,10 @@ then open http://localhost:8765/.
   (player, sentinels, projectiles), `world.js` (rooms), `render.js`, `ui.js`,
   `audio.js`, `game.js` (state machine and main loop)
 - `assets/` — parallax layers and the sprite sheets cut from the source art
-- `tools/` — sprite / scenery / icon builders (Python + Pillow), the reachability
-  bot (`reach_test.js`: in the page, or headless through `run_reach.js`) and the
-  in-page playthrough bot
+- `tools/` — sprite / scenery / icon builders (Python 3.10–3.12 with Pillow,
+  numpy and scipy: `python3 -m pip install -r tools/requirements.txt`), the
+  reachability bot (`reach_test.js`: in the page, or headless through
+  `run_reach.js`) and the in-page playthrough bot
 - `specs.txt` — the original design brief
 
 ## Checking
